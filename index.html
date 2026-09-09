@@ -3,62 +3,65 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
   :root{
-    --ink:#1B2430;
-    --muted:#5B6B78;
-    --bg:#EDF1F3;
+    --ink:#36424A;
+    --muted:#647079;
+    --bg:#EEEEE6;
     --surface:#FFFFFF;
-    --surface-2:#F5F7F8;
-    --line:#DCE3E7;
-    --accent:#B4592C;
-    --accent-soft:#F1DFD3;
-    --danger:#C0392B;
-    --danger-soft:#F7DEDA;
-    --warning:#B4780F;
-    --warning-soft:#F6E7C9;
-    --good:#2E8558;
-    --good-soft:#D9EEE1;
-    --neutral-state:#7C8896;
-    --neutral-soft:#E7EAED;
-    --shadow: 0 1px 2px rgba(20,30,40,.06), 0 6px 16px -8px rgba(20,30,40,.12);
+    --surface-2:#F5F4EE;
+    --line:#DCDACD;
+    --accent:#E55302;
+    --accent-soft:#FBE0CC;
+    --accent-2:#7A2531;
+    --danger:#C13832;
+    --danger-soft:#F6DAD8;
+    --warning:#F4AA00;
+    --warning-soft:#FCEAC0;
+    --good:#0098AA;
+    --good-soft:#D2EEF1;
+    --neutral-state:#7A7660;
+    --neutral-soft:#EDECE0;
+    --shadow: 0 1px 2px rgba(54,66,74,.08), 0 6px 16px -8px rgba(54,66,74,.16);
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --ink:#E7ECEF;
-      --muted:#93A1AC;
-      --bg:#10161C;
-      --surface:#1A222B;
-      --surface-2:#212B35;
-      --line:#2B3540;
-      --accent:#E08A55;
-      --accent-soft:#3A2A20;
-      --danger:#FF6B60;
-      --danger-soft:#3A2020;
-      --warning:#F2B84B;
-      --warning-soft:#3A2F18;
-      --good:#57C98A;
-      --good-soft:#173226;
-      --neutral-state:#8C99A6;
-      --neutral-soft:#242D36;
+      --ink:#EAE8DE;
+      --muted:#AFAF9C;
+      --bg:#20272B;
+      --surface:#2A3238;
+      --surface-2:#313A40;
+      --line:#414B4F;
+      --accent:#FF8A4A;
+      --accent-soft:#4A2A18;
+      --accent-2:#C06272;
+      --danger:#E2645C;
+      --danger-soft:#3D211F;
+      --warning:#FFC233;
+      --warning-soft:#3D2E0E;
+      --good:#3FC3D6;
+      --good-soft:#0F3438;
+      --neutral-state:#C4C1A0;
+      --neutral-soft:#383527;
       --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 20px -10px rgba(0,0,0,.6);
     }
   }
   :root[data-theme="dark"]{
-    --ink:#E7ECEF;
-    --muted:#93A1AC;
-    --bg:#10161C;
-    --surface:#1A222B;
-    --surface-2:#212B35;
-    --line:#2B3540;
-    --accent:#E08A55;
-    --accent-soft:#3A2A20;
-    --danger:#FF6B60;
-    --danger-soft:#3A2020;
-    --warning:#F2B84B;
-    --warning-soft:#3A2F18;
-    --good:#57C98A;
-    --good-soft:#173226;
-    --neutral-state:#8C99A6;
-    --neutral-soft:#242D36;
+    --ink:#EAE8DE;
+    --muted:#AFAF9C;
+    --bg:#20272B;
+    --surface:#2A3238;
+    --surface-2:#313A40;
+    --line:#414B4F;
+    --accent:#FF8A4A;
+    --accent-soft:#4A2A18;
+    --accent-2:#C06272;
+    --danger:#E2645C;
+    --danger-soft:#3D211F;
+    --warning:#FFC233;
+    --warning-soft:#3D2E0E;
+    --good:#3FC3D6;
+    --good-soft:#0F3438;
+    --neutral-state:#C4C1A0;
+    --neutral-soft:#383527;
     --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 20px -10px rgba(0,0,0,.6);
   }
 
@@ -216,7 +219,7 @@
   tbody tr{position:relative;}
   tbody tr td:first-child{border-left:3px solid transparent;}
   tbody tr.sev-critica td:first-child{border-left-color:var(--danger);}
-  tbody tr.sev-alta td:first-child{border-left-color:var(--warning);}
+  tbody tr.sev-alta td:first-child{border-left-color:var(--accent-2);}
   tbody tr.sev-ok td:first-child{border-left-color:var(--good);}
   tbody tr.sev-info td:first-child{border-left-color:var(--neutral-state);}
   .cell-strong{font-weight:600;}
