@@ -1,0 +1,570 @@
+<title>Panel Flotación FRA</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#1B2430;
+    --muted:#5B6B78;
+    --bg:#EDF1F3;
+    --surface:#FFFFFF;
+    --surface-2:#F5F7F8;
+    --line:#DCE3E7;
+    --accent:#B4592C;
+    --accent-soft:#F1DFD3;
+    --danger:#C0392B;
+    --danger-soft:#F7DEDA;
+    --warning:#B4780F;
+    --warning-soft:#F6E7C9;
+    --good:#2E8558;
+    --good-soft:#D9EEE1;
+    --neutral-state:#7C8896;
+    --neutral-soft:#E7EAED;
+    --shadow: 0 1px 2px rgba(20,30,40,.06), 0 6px 16px -8px rgba(20,30,40,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#E7ECEF;
+      --muted:#93A1AC;
+      --bg:#10161C;
+      --surface:#1A222B;
+      --surface-2:#212B35;
+      --line:#2B3540;
+      --accent:#E08A55;
+      --accent-soft:#3A2A20;
+      --danger:#FF6B60;
+      --danger-soft:#3A2020;
+      --warning:#F2B84B;
+      --warning-soft:#3A2F18;
+      --good:#57C98A;
+      --good-soft:#173226;
+      --neutral-state:#8C99A6;
+      --neutral-soft:#242D36;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 20px -10px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#E7ECEF;
+    --muted:#93A1AC;
+    --bg:#10161C;
+    --surface:#1A222B;
+    --surface-2:#212B35;
+    --line:#2B3540;
+    --accent:#E08A55;
+    --accent-soft:#3A2A20;
+    --danger:#FF6B60;
+    --danger-soft:#3A2020;
+    --warning:#F2B84B;
+    --warning-soft:#3A2F18;
+    --good:#57C98A;
+    --good-soft:#173226;
+    --neutral-state:#8C99A6;
+    --neutral-soft:#242D36;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 20px -10px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:20px 22px 48px;
+  }
+  .wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:18px;}
+
+  .eyebrow{
+    font-family:"Oswald", sans-serif;
+    font-weight:600;
+    font-size:11.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+  }
+  h1{
+    font-family:"Oswald", sans-serif;
+    font-weight:700;
+    font-size:clamp(22px,3vw,30px);
+    letter-spacing:.01em;
+    margin:2px 0 0;
+    text-wrap:balance;
+  }
+  .subhead{color:var(--muted);font-size:13px;margin-top:4px;}
+  .subhead b{color:var(--ink);font-weight:600;}
+
+  header.top{
+    display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:16px;
+  }
+  .updated{
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px;color:var(--muted);
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:7px 11px;
+    white-space:nowrap;
+  }
+
+  /* KPI row */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .kpi{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px 16px;
+    box-shadow:var(--shadow);
+    display:flex;flex-direction:column;gap:4px;
+  }
+  .kpi .label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  .kpi .value{font-family:"Oswald",sans-serif;font-size:30px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1;}
+  .kpi .sub{font-size:12px;color:var(--muted);}
+  .kpi.danger .value{color:var(--danger);}
+  .kpi.warning .value{color:var(--warning);}
+  .kpi.good .value{color:var(--good);}
+
+  /* Slicer panel */
+  .slicers{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px 16px;
+    box-shadow:var(--shadow);
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .slicers-head{display:flex;justify-content:space-between;align-items:center;}
+  .slicers-title{font-family:"Oswald",sans-serif;font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+  .reset-btn{
+    font-family:"IBM Plex Sans",sans-serif;font-size:12px;font-weight:600;
+    color:var(--accent);background:var(--accent-soft);border:1px solid transparent;
+    border-radius:7px;padding:6px 10px;cursor:pointer;
+  }
+  .reset-btn:hover{filter:brightness(1.05);}
+  .reset-btn:focus-visible, .chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  .slicer-groups{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .slicer-group{display:flex;flex-direction:column;gap:7px;min-width:0;}
+  .slicer-label{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  .chip-row{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{
+    font-family:"IBM Plex Sans",sans-serif;
+    font-size:12.5px;font-weight:600;
+    border:1px solid var(--line);
+    background:var(--surface-2);
+    color:var(--ink);
+    border-radius:999px;
+    padding:6px 12px;
+    cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;
+    transition:background .12s ease, border-color .12s ease, color .12s ease;
+    white-space:nowrap;
+  }
+  .chip .n{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);}
+  .chip.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .chip.active .n{color:rgba(255,255,255,.8);}
+  .chip.zero{opacity:.38;cursor:default;}
+  .chip.zero:hover{background:var(--surface-2);}
+  .chip:not(.zero):hover{border-color:var(--accent);}
+
+  /* charts */
+  .charts{display:grid;grid-template-columns:1.1fr 1.4fr 1fr;gap:14px;}
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+    box-shadow:var(--shadow);
+    display:flex;flex-direction:column;gap:10px;
+    min-width:0;
+  }
+  .panel-title{font-family:"Oswald",sans-serif;font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+  .chart-box{position:relative;height:200px;}
+  .legend-row{display:flex;flex-wrap:wrap;gap:10px 14px;font-size:12px;color:var(--muted);}
+  .legend-row span{display:inline-flex;align-items:center;gap:6px;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+
+  /* table */
+  .table-panel{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .table-head{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:14px 16px 10px;
+  }
+  .table-scroll{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;min-width:920px;}
+  thead th{
+    text-align:left;
+    font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+    font-weight:600;
+    padding:8px 12px;
+    border-bottom:1px solid var(--line);
+    background:var(--surface-2);
+    position:sticky;top:0;
+  }
+  tbody td{
+    padding:9px 12px;
+    font-size:13px;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr{position:relative;}
+  tbody tr td:first-child{border-left:3px solid transparent;}
+  tbody tr.sev-critica td:first-child{border-left-color:var(--danger);}
+  tbody tr.sev-alta td:first-child{border-left-color:var(--warning);}
+  tbody tr.sev-ok td:first-child{border-left-color:var(--good);}
+  tbody tr.sev-info td:first-child{border-left-color:var(--neutral-state);}
+  .cell-strong{font-weight:600;}
+  .mono{font-family:"IBM Plex Mono",monospace;font-size:12px;}
+  .muted-cell{color:var(--muted);font-size:12.5px;}
+
+  .pill{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:11.5px;font-weight:600;
+    padding:3px 9px;border-radius:999px;
+    white-space:nowrap;
+  }
+  .pill.p-alta{background:var(--danger-soft);color:var(--danger);}
+  .pill.p-media{background:var(--warning-soft);color:var(--warning);}
+  .pill.p-baja{background:var(--good-soft);color:var(--good);}
+  .pill.p-sindefinir{background:var(--neutral-soft);color:var(--neutral-state);}
+  .pill.e-completado{background:var(--good-soft);color:var(--good);}
+  .pill.e-pendiente{background:var(--danger-soft);color:var(--danger);}
+  .pill.e-sinestado{background:var(--neutral-soft);color:var(--neutral-state);}
+
+  .empty-row td{text-align:center;color:var(--muted);padding:28px;font-size:13px;}
+
+  footer{color:var(--muted);font-size:11.5px;text-align:center;padding-top:6px;}
+
+  @media (prefers-reduced-motion: reduce){
+    .chip, .reset-btn{transition:none;}
+  }
+
+  @media (max-width: 980px){
+    .kpis{grid-template-columns:repeat(2,1fr);}
+    .slicer-groups{grid-template-columns:repeat(2,1fr);}
+    .charts{grid-template-columns:1fr;}
+  }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Mantenimiento · Planta de Flotación</div>
+      <h1>Panel de Seguimiento — Celdas A0E · A1 · A2</h1>
+      <div class="subhead">Estado de cada celda, prioridad asignada y orden de trabajo asociada. Filtra con los segmentadores para explorar por máquina, línea, prioridad o estado.</div>
+    </div>
+    <div class="updated" id="updated-badge">ACTUALIZADO 09-09-2026</div>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="slicers">
+    <div class="slicers-head">
+      <div class="slicers-title">Segmentadores</div>
+      <button class="reset-btn" id="reset-btn" type="button">Quitar filtros</button>
+    </div>
+    <div class="slicer-groups">
+      <div class="slicer-group">
+        <div class="slicer-label">Máquina</div>
+        <div class="chip-row" id="slicer-maquina"></div>
+      </div>
+      <div class="slicer-group">
+        <div class="slicer-label">Línea</div>
+        <div class="chip-row" id="slicer-linea"></div>
+      </div>
+      <div class="slicer-group">
+        <div class="slicer-label">Prioridad</div>
+        <div class="chip-row" id="slicer-prioridad"></div>
+      </div>
+      <div class="slicer-group">
+        <div class="slicer-label">Estado orden</div>
+        <div class="chip-row" id="slicer-estado"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="charts">
+    <div class="panel">
+      <div class="panel-title">Celdas por prioridad</div>
+      <div class="chart-box"><canvas id="chart-prioridad"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Prioridad por línea</div>
+      <div class="chart-box"><canvas id="chart-linea"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Estado de la orden</div>
+      <div class="chart-box"><canvas id="chart-estado"></canvas></div>
+    </div>
+  </section>
+
+  <section class="table-panel">
+    <div class="table-head">
+      <div class="panel-title" style="margin:0;">Celdas ordenadas de peor a mejor condición</div>
+      <div class="muted-cell" id="table-count">48 celdas</div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Celda</th>
+            <th>Máquina</th>
+            <th>Línea</th>
+            <th>Prioridad</th>
+            <th>Estado</th>
+            <th>N° Orden</th>
+            <th>Último cambio</th>
+            <th>Detalle / Observaciones</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>Datos cargados desde Estatus de Máquinas FRA · fila base: Excel de seguimiento A0E / A1 / A2</footer>
+</div>
+
+<script>
+const DATA = [{"maquina": "A0E", "celda": "Celda 1", "celdaNum": 1, "linea": "Línea 1", "prioridad": "Alta", "detalle": "Cambio Rotor / Eje intermedio/ Reductor", "orden": "110261058/110783637/110791368/ 30433342", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "Cambio de Rotor maquina 1 / Cambio eje intermedio maquina 1/ Cambio Reductor maquina 1"}, {"maquina": "A0E", "celda": "Celda 2", "celdaNum": 2, "linea": "Línea 1", "prioridad": "Alta", "detalle": "Cambio Rotor", "orden": "110261060 / 110783639 /30433350", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "Cambio Rotor / Cambio eje intermedio maquina 2"}, {"maquina": "A0E", "celda": "Celda 3", "celdaNum": 3, "linea": "Línea 1", "prioridad": "Alta", "detalle": "Rotor Estabilizador", "orden": "110359065 / 110783640", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "cambio rotor y estabilizador maquina 3/ Cambio eje intermedio maquina 3"}, {"maquina": "A0E", "celda": "Celda 4", "celdaNum": 4, "linea": "Línea 1", "prioridad": "Alta", "detalle": "Rotor Estabilizador", "orden": "110359068 / 110783642", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "cambio rotor y estabilizador maquina 4 / Cambio eje intermedio maquina 4"}, {"maquina": "A0E", "celda": "Celda 5", "celdaNum": 5, "linea": "Línea 1", "prioridad": "Alta", "detalle": "Rotor Estabilizador", "orden": "110359071", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "cambio rotor y estabilizador maquina 5"}, {"maquina": "A0E", "celda": "Celda 6", "celdaNum": 6, "linea": "Línea 1", "prioridad": "Alta", "detalle": "Rotor Estabilizador", "orden": "110359072", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "cambio rotor y estabilizador maquina 6"}, {"maquina": "A0E", "celda": "Celda 7", "celdaNum": 7, "linea": "Línea 2", "prioridad": "Alta", "detalle": "Reponer perno eje intermedio", "orden": "Aviso 30209077", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "Aviso Rechazado"}, {"maquina": "A0E", "celda": "Celda 8", "celdaNum": 8, "linea": "Línea 2", "prioridad": "Media", "detalle": "launder Aseo", "orden": "Falta aviso", "estado": "Sin estado", "responsable": "", "ultimoCambio": "", "comentarios": ""}, {"maquina": "A0E", "celda": "Celda 9", "celdaNum": 9, "linea": "Línea 2", "prioridad": "Baja", "detalle": "Eje Intermedio", "orden": "110287096", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "FA0 ext. Agit 9 eje intermedio cortado"}, {"maquina": "A0E", "celda": "Celda 10", "celdaNum": 10, "linea": "Línea 2", "prioridad": "Baja", "detalle": "", "orden": "", "estado": "Sin estado", "responsable": "", "ultimoCambio": "", "comentarios": ""}, {"maquina": "A0E", "celda": "Celda 11", "celdaNum": 11, "linea": "Línea 2", "prioridad": "Baja", "detalle": "", "orden": "", "estado": "Sin estado", "responsable": "", "ultimoCambio": "", "comentarios": ""}, {"maquina": "A0E", "celda": "Celda 12", "celdaNum": 12, "linea": "Línea 2", "prioridad": "Baja", "detalle": "", "orden": "", "estado": "Sin estado", "responsable": "", "ultimoCambio": "", "comentarios": ""}, {"maquina": "A1", "celda": "Celda 1", "celdaNum": 1, "linea": "Línea 1", "prioridad": "Baja", "detalle": "Cambio Correas", "orden": "110893160 ( Abie)", "estado": "Completado", "responsable": "Juan Burgos", "ultimoCambio": "03-09-2026", "comentarios": "Cambio Correas"}, {"maquina": "A1", "celda": "Celda 2", "celdaNum": 2, "linea": "Línea 1", "prioridad": "Baja", "detalle": "Cambio de correa", "orden": "110260761 /110303872", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "Cambio Correas / Cambio polea motor"}, {"maquina": "A1", "celda": "Celda 3", "celdaNum": 3, "linea": "Línea 1", "prioridad": "Alta", "detalle": "Rotor Estabilizador", "orden": "110719629", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "Cambio Rotor y Estabilizador maquina 3"}, {"maquina": "A1", "celda": "Celda 4", "celdaNum": 4, "linea": "Línea 1", "prioridad": "Baja", "detalle": "Cambio de Correas", "orden": "110797803", "estado": "Pendiente", "responsable": "Juan Burgos", "ultimoCambio": "03-09-2026", "comentarios": "cambio correas LA-M4-FLA1"}, {"maquina": "A1", "celda": "Celda 5", "celdaNum": 5, "linea": "Línea 1", "prioridad": "Alta", "detalle": "Estabilizador", "orden": "110202069", "estado": "Pendiente", "responsable": "Juan Burgos", "ultimoCambio": "03-09-2026", "comentarios": "Cambio Estabilizador 5"}, {"maquina": "A1", "celda": "Celda 6", "celdaNum": 6, "linea": "Línea 1", "prioridad": "Baja", "detalle": "Estabilizador fuera de posicion", "orden": "110737909", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "Estabilizador fuera de posicion"}, {"maquina": "A1", "celda": "Celda 7", "celdaNum": 7, "linea": "Línea 2", "prioridad": "Baja", "detalle": "Ruido Rod Carga Motor MAQ 7 FLOT A1", "orden": "108809552", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "Ruido Rod Carga Motor MAQ 7 FLOT A1"}, {"maquina": "A1", "celda": "Celda 8", "celdaNum": 8, "linea": "Línea 2", "prioridad": "Baja", "detalle": "Cambio Correas / estabilizador fuera de posicion", "orden": "110893171 / 110737906", "estado": "Completado", "responsable": "Juan Burgos", "ultimoCambio": "03-09-2026", "comentarios": "Cambio de correas (el técnico lo anotó como 'prioridad 4') / estabilizador fuera de posicion"}, {"maquina": "A1", "celda": "Celda 9", "celdaNum": 9, "linea": "Línea 2", "prioridad": "Baja", "detalle": "Cambio polea motor", "orden": "110303873", "estado": "Sin estado", "responsable": "", "ultimoCambio": "", "comentarios": "Cambio polea motor"}, {"maquina": "A1", "celda": "Celda 10", "celdaNum": 10, "linea": "Línea 2", "prioridad": "Baja", "detalle": "Cambio Estabilizador", "orden": "110893174", "estado": "Completado", "responsable": "Juan Burgos", "ultimoCambio": "03-09-2026", "comentarios": "Cambio de estabilizador"}, {"maquina": "A1", "celda": "Celda 11", "celdaNum": 11, "linea": "Línea 2", "prioridad": "Baja", "detalle": "Cambio motor / Cambio de Correas ", "orden": "110783391 / 110797805", "estado": "Completado", "responsable": "Juan Burgos", "ultimoCambio": "03-09-2026", "comentarios": " Cambio motor / Cambio de Correas "}, {"maquina": "A1", "celda": "Celda 12", "celdaNum": 12, "linea": "Línea 2", "prioridad": "Baja", "detalle": "", "orden": "", "estado": "Sin estado", "responsable": "", "ultimoCambio": "", "comentarios": ""}, {"maquina": "A2", "celda": "Celda 1", "celdaNum": 1, "linea": "Línea 1", "prioridad": "Baja", "detalle": "Estabilizador", "orden": "110360867", "estado": "Pendiente", "responsable": "Juan Burgos", "ultimoCambio": "03-09-2026", "comentarios": "cambio estabilizador L1-M2-FLA2"}, {"maquina": "A2", "celda": "Celda 2", "celdaNum": 2, "linea": "Línea 1", "prioridad": "Baja", "detalle": "Estabilizador", "orden": "110360868", "estado": "Pendiente", "responsable": "Juan Burgos", "ultimoCambio": "03-09-2026", "comentarios": "cambio estabilizador L1-M2-FLA2"}, {"maquina": "A2", "celda": "Celda 3", "celdaNum": 3, "linea": "Línea 1", "prioridad": "Alta", "detalle": "Estabilizador + Rotor (cono colgando)", "orden": "Falta aviso", "estado": "Pendiente", "responsable": "Juan Burgos", "ultimoCambio": "03-09-2026", "comentarios": "Cono colgando al interior de la celda; se debe cambiar el rotor (urgente)"}, {"maquina": "A2", "celda": "Celda 4", "celdaNum": 4, "linea": "Línea 1", "prioridad": "Alta", "detalle": "Estabilizador", "orden": "110029788", "estado": "Pendiente", "responsable": "Juan Burgos", "ultimoCambio": "03-09-2026", "comentarios": "Cambio Estabilizador L1-M4-FLA2"}, {"maquina": "A2", "celda": "Celda 5", "celdaNum": 5, "linea": "Línea 1", "prioridad": "Alta", "detalle": "Cambio Rotor", "orden": "110893134", "estado": "Pendiente", "responsable": "Juan Burgos", "ultimoCambio": "03-09-2026", "comentarios": "Cambio de rotor"}, {"maquina": "A2", "celda": "Celda 6", "celdaNum": 6, "linea": "Línea 1", "prioridad": "Alta", "detalle": "Rotor Estabilizador", "orden": "110360869", "estado": "Completado", "responsable": "Juan Burgos", "ultimoCambio": "03-09-2026", "comentarios": "Cambio solo el estabilizador"}, {"maquina": "A2", "celda": "Celda 7", "celdaNum": 7, "linea": "Línea 1", "prioridad": "Alta", "detalle": "Cambio de Cilindro + Embancada", "orden": "110359063( Realizado) 110767474", "estado": "Completado", "responsable": "Juan Burgos", "ultimoCambio": "03-09-2026", "comentarios": "Celda embancada; sigue pendiente el cambio de cilindro (esta ok) Se realizo Cambio cilindro portarodamiento L1-M7-FL / Cambio Estabilizador maquina 7"}, {"maquina": "A2", "celda": "Celda 8", "celdaNum": 8, "linea": "Línea 1", "prioridad": "Media", "detalle": "Reposicionar Estabilizador y Rotor", "orden": "110530734", "estado": "Pendiente", "responsable": "Juan Burgos", "ultimoCambio": "03-09-2026", "comentarios": "reposicionar estabilizador L1-M8-FLA2"}, {"maquina": "A2", "celda": "Celda 9", "celdaNum": 9, "linea": "Línea 2", "prioridad": "Alta", "detalle": "Cambio Rotor Estabilizador / Correa", "orden": "110030610 / 110041231", "estado": "Pendiente", "responsable": "Juan Burgos", "ultimoCambio": "01-09-2026", "comentarios": "cambo rotor estabilizador L2-M9-FLA2 / Cambio Correas  maquina 9 FLOT A-2"}, {"maquina": "A2", "celda": "Celda 10", "celdaNum": 10, "linea": "Línea 2", "prioridad": "Alta", "detalle": "Rotor Estabilizador", "orden": "110030789", "estado": "Pendiente", "responsable": "Juan Burgos", "ultimoCambio": "01-09-2026", "comentarios": "cambio rotor L2-M10-FLA2"}, {"maquina": "A2", "celda": "Celda 11", "celdaNum": 11, "linea": "Línea 2", "prioridad": "Alta", "detalle": "Cambio  Estabilizador", "orden": "Falta aviso Estabilizador", "estado": "Completado", "responsable": "Juan Burgos", "ultimoCambio": "01-09-2026", "comentarios": "Revisión en terreno: máquina en buena condición Se realizo cambio de rotor (110037425)"}, {"maquina": "A2", "celda": "Celda 12", "celdaNum": 12, "linea": "Línea 2", "prioridad": "Alta", "detalle": "Rotor Estabilizador + Embancada", "orden": "110037427 - 110037428", "estado": "Pendiente", "responsable": "Juan Burgos", "ultimoCambio": "01-09-2026", "comentarios": "Celda embancada — requiere desatoro/limpieza urgente. Pend: Estabilizador y rotor cambio rotor L2-M12-FLA2 (Pend) cambio pernos estabilizador L2-M12-FLA2 (Pend)"}, {"maquina": "A2", "celda": "Celda 13", "celdaNum": 13, "linea": "Línea 2", "prioridad": "Alta", "detalle": " Cambio Estabilizador", "orden": "109210285", "estado": "Pendiente", "responsable": "Juan Burgos", "ultimoCambio": "01-09-2026", "comentarios": "pend Cambio de rotor; cambio de correas. Estabilizador Ok (108754813).Línea 2 máquina 13 FLO A-2, rotor (109210285)"}, {"maquina": "A2", "celda": "Celda 14", "celdaNum": 14, "linea": "Línea 2", "prioridad": "Baja", "detalle": "Cambio Cilindro", "orden": "110041128", "estado": "Pendiente", "responsable": "Juan Burgos", "ultimoCambio": "01-09-2026", "comentarios": "Revisión: buen estado; cambio de correas realizado"}, {"maquina": "A2", "celda": "Celda 15", "celdaNum": 15, "linea": "Línea 2", "prioridad": "Baja", "detalle": "Cambio Estabilizador", "orden": "110041130", "estado": "Pendiente", "responsable": "Juan Burgos", "ultimoCambio": "01-09-2026", "comentarios": "Marcada Prioridad 1; cambio de estabilizador realizado // cambio estabilizador L2-M15-FLA2"}, {"maquina": "A2", "celda": "Celda 16", "celdaNum": 16, "linea": "Línea 2", "prioridad": "Baja", "detalle": "Cambio Estabilizador", "orden": "110041135", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "cambio estabilizador L2-M16-FLA2"}, {"maquina": "A2", "celda": "Celda 17", "celdaNum": 17, "linea": "Línea 3", "prioridad": "Baja", "detalle": "Cambio cilindro maquina 17", "orden": "110841109", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "Cambio cilindro maquina 17"}, {"maquina": "A2", "celda": "Celda 18", "celdaNum": 18, "linea": "Línea 3", "prioridad": "Baja", "detalle": "Cambio Estabilizador", "orden": "110654013", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "Cambio Estabilizador"}, {"maquina": "A2", "celda": "Celda 19", "celdaNum": 19, "linea": "Línea 3", "prioridad": "Baja", "detalle": "", "orden": "", "estado": "Sin estado", "responsable": "", "ultimoCambio": "", "comentarios": ""}, {"maquina": "A2", "celda": "Celda 20", "celdaNum": 20, "linea": "Línea 3", "prioridad": "Baja", "detalle": "", "orden": "", "estado": "Sin estado", "responsable": "", "ultimoCambio": "09-07-2026", "comentarios": "Cambio de Pernos "}, {"maquina": "A2", "celda": "Celda 21", "celdaNum": 21, "linea": "Línea 3", "prioridad": "Baja", "detalle": "Cambio Rotor", "orden": "110260810", "estado": "Completado", "responsable": "", "ultimoCambio": "", "comentarios": "Cambio Rotor "}, {"maquina": "A2", "celda": "Celda 22", "celdaNum": 22, "linea": "Línea 3", "prioridad": "Sin definir", "detalle": "", "orden": "", "estado": "Sin estado", "responsable": "", "ultimoCambio": "", "comentarios": ""}, {"maquina": "A2", "celda": "Celda 23", "celdaNum": 23, "linea": "Línea 3", "prioridad": "Media", "detalle": "Cambio Rotor Según Inspección", "orden": "110639631", "estado": "Pendiente", "responsable": "", "ultimoCambio": "", "comentarios": "revisar maquina L3-M23-FLA0"}, {"maquina": "A2", "celda": "Celda 24", "celdaNum": 24, "linea": "Línea 3", "prioridad": "Baja", "detalle": "", "orden": "", "estado": "Sin estado", "responsable": "", "ultimoCambio": "", "comentarios": ""}];
+
+const PRIORIDAD_ORDER = ["Alta","Media","Baja","Sin definir"];
+const ESTADO_ORDER = ["Pendiente","Sin estado","Completado"];
+
+function prioridadWeight(p){
+  return {"Alta":3,"Media":2,"Baja":1,"Sin definir":0}[p] ?? 0;
+}
+function estadoWeight(e){
+  return {"Pendiente":100,"Sin estado":50,"Completado":0}[e] ?? 50;
+}
+function severityClass(row){
+  if(row.estado==="Pendiente" && (row.prioridad==="Alta"||row.prioridad==="Media")) return "sev-critica";
+  if(row.estado!=="Completado" && row.prioridad==="Alta") return "sev-alta";
+  if(row.estado==="Completado") return "sev-ok";
+  return "sev-info";
+}
+function slugify(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,""); }
+
+const state = {
+  maquina: new Set(),
+  linea: new Set(),
+  prioridad: new Set(),
+  estado: new Set(),
+};
+
+function passesFilter(row, exceptKey){
+  const checks = {
+    maquina: () => state.maquina.size===0 || state.maquina.has(row.maquina),
+    linea: () => state.linea.size===0 || state.linea.has(row.linea),
+    prioridad: () => state.prioridad.size===0 || state.prioridad.has(row.prioridad),
+    estado: () => state.estado.size===0 || state.estado.has(row.estado),
+  };
+  return Object.keys(checks).every(k => k===exceptKey ? true : checks[k]());
+}
+
+function filteredRows(exceptKey){
+  return DATA.filter(r => passesFilter(r, exceptKey));
+}
+
+function currentRows(){
+  return filteredRows(null);
+}
+
+const COLORS = {
+  Alta: "var(--danger)", Media: "var(--warning)", Baja: "var(--good)", "Sin definir": "var(--neutral-state)",
+  Completado: "var(--good)", Pendiente: "var(--danger)", "Sin estado": "var(--neutral-state)",
+};
+function cssVar(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name.replace(/^var\((.*)\)$/,"$1")).trim();
+}
+function colorFor(key){
+  const v = COLORS[key];
+  if(!v) return cssVar("--muted");
+  return v.startsWith("var(") ? cssVar(v) : v;
+}
+
+let charts = {};
+
+function buildSlicerGroup(containerId, field, order, labelFn){
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+  const values = order || Array.from(new Set(DATA.map(r=>r[field]))).sort();
+  values.forEach(val => {
+    const count = filteredRows(field).filter(r => r[field]===val).length;
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip" + (state[field].has(val) ? " active" : "") + (count===0 ? " zero" : "");
+    chip.innerHTML = `${labelFn ? labelFn(val) : val} <span class="n">${count}</span>`;
+    chip.addEventListener("click", () => {
+      if(count===0 && !state[field].has(val)) return;
+      if(state[field].has(val)) state[field].delete(val); else state[field].add(val);
+      renderAll();
+    });
+    container.appendChild(chip);
+  });
+}
+
+function renderSlicers(){
+  buildSlicerGroup("slicer-maquina", "maquina", ["A0E","A1","A2"]);
+  buildSlicerGroup("slicer-linea", "linea", ["Línea 1","Línea 2","Línea 3"]);
+  buildSlicerGroup("slicer-prioridad", "prioridad", PRIORIDAD_ORDER);
+  buildSlicerGroup("slicer-estado", "estado", ESTADO_ORDER);
+}
+
+function renderKPIs(){
+  const rows = currentRows();
+  const total = rows.length;
+  const alta = rows.filter(r=>r.prioridad==="Alta").length;
+  const pendientes = rows.filter(r=>r.estado==="Pendiente").length;
+  const completadas = rows.filter(r=>r.estado==="Completado").length;
+  const kpis = [
+    {label:"Celdas en vista", value: total, sub: `de ${DATA.length} totales`, cls:""},
+    {label:"Prioridad alta", value: alta, sub: total ? Math.round(alta/total*100)+"% del filtro" : "—", cls:"danger"},
+    {label:"Pendientes", value: pendientes, sub:"requieren orden / acción", cls:"warning"},
+    {label:"Completadas", value: completadas, sub:"con cambio registrado", cls:"good"},
+  ];
+  const el = document.getElementById("kpis");
+  el.innerHTML = kpis.map(k => `
+    <div class="kpi ${k.cls}">
+      <div class="label">${k.label}</div>
+      <div class="value">${k.value}</div>
+      <div class="sub">${k.sub}</div>
+    </div>
+  `).join("");
+}
+
+function renderCharts(){
+  const rows = currentRows();
+
+  // Prioridad donut
+  const pCounts = PRIORIDAD_ORDER.map(p => rows.filter(r=>r.prioridad===p).length);
+  const pColors = PRIORIDAD_ORDER.map(colorFor);
+  renderDoughnut("chart-prioridad", PRIORIDAD_ORDER, pCounts, pColors);
+
+  // Linea stacked bar
+  const lineas = ["Línea 1","Línea 2","Línea 3"];
+  const datasetsLinea = PRIORIDAD_ORDER.map(p => ({
+    label: p,
+    data: lineas.map(l => rows.filter(r=>r.linea===l && r.prioridad===p).length),
+    backgroundColor: colorFor(p),
+    borderRadius: 3,
+    maxBarThickness: 34,
+  }));
+  renderStackedBar("chart-linea", lineas, datasetsLinea);
+
+  // Estado bar
+  const eCounts = ESTADO_ORDER.map(e => rows.filter(r=>r.estado===e).length);
+  const eColors = ESTADO_ORDER.map(colorFor);
+  renderSimpleBar("chart-estado", ESTADO_ORDER, eCounts, eColors);
+}
+
+function baseFont(){
+  return { family: "IBM Plex Sans", size: 11 };
+}
+
+function renderDoughnut(id, labels, data, colors){
+  const ctx = document.getElementById(id).getContext("2d");
+  if(charts[id]) charts[id].destroy();
+  charts[id] = new Chart(ctx, {
+    type: "doughnut",
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth:2, borderColor: cssVar("--surface") }] },
+    options: {
+      maintainAspectRatio:false,
+      cutout: "62%",
+      plugins:{
+        legend:{ position:"bottom", labels:{ color: cssVar("--muted"), font: baseFont(), boxWidth:9, boxHeight:9, padding:12 } },
+        tooltip:{ titleFont: baseFont(), bodyFont: baseFont() },
+      }
+    }
+  });
+}
+function renderStackedBar(id, labels, datasets){
+  const ctx = document.getElementById(id).getContext("2d");
+  if(charts[id]) charts[id].destroy();
+  charts[id] = new Chart(ctx, {
+    type: "bar",
+    data: { labels, datasets },
+    options: {
+      maintainAspectRatio:false,
+      scales:{
+        x:{ stacked:true, grid:{ display:false }, ticks:{ color: cssVar("--muted"), font: baseFont() } },
+        y:{ stacked:true, beginAtZero:true, ticks:{ precision:0, color: cssVar("--muted"), font: baseFont() }, grid:{ color: cssVar("--line") } }
+      },
+      plugins:{ legend:{ display:false }, tooltip:{ titleFont: baseFont(), bodyFont: baseFont() } }
+    }
+  });
+}
+function renderSimpleBar(id, labels, data, colors){
+  const ctx = document.getElementById(id).getContext("2d");
+  if(charts[id]) charts[id].destroy();
+  charts[id] = new Chart(ctx, {
+    type: "bar",
+    data: { labels, datasets:[{ data, backgroundColor: colors, borderRadius:5, maxBarThickness:46 }] },
+    options: {
+      indexAxis: "y",
+      maintainAspectRatio:false,
+      scales:{
+        x:{ beginAtZero:true, ticks:{ precision:0, color: cssVar("--muted"), font: baseFont() }, grid:{ color: cssVar("--line") } },
+        y:{ grid:{ display:false }, ticks:{ color: cssVar("--muted"), font: baseFont() } }
+      },
+      plugins:{ legend:{ display:false }, tooltip:{ titleFont: baseFont(), bodyFont: baseFont() } }
+    }
+  });
+}
+
+function pillClass(prefix, value){
+  return prefix + "-" + slugify(value);
+}
+
+function renderTable(){
+  const rows = [...currentRows()].sort((a,b) => {
+    const score = (r) => estadoWeight(r.estado) + prioridadWeight(r.prioridad)*10;
+    const diff = score(b) - score(a);
+    if(diff !== 0) return diff;
+    if(a.maquina !== b.maquina) return a.maquina.localeCompare(b.maquina);
+    return a.celdaNum - b.celdaNum;
+  });
+  const tbody = document.getElementById("table-body");
+  document.getElementById("table-count").textContent = rows.length + (rows.length===1 ? " celda" : " celdas");
+  if(rows.length===0){
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="8">Ningún resultado con los filtros seleccionados.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `
+    <tr class="${severityClass(r)}">
+      <td class="cell-strong">${r.celda}</td>
+      <td>${r.maquina}</td>
+      <td class="muted-cell">${r.linea}</td>
+      <td><span class="pill ${pillClass("p", r.prioridad)}">${r.prioridad}</span></td>
+      <td><span class="pill ${pillClass("e", r.estado)}">${r.estado}</span></td>
+      <td class="mono">${r.orden || "—"}</td>
+      <td class="muted-cell">${r.ultimoCambio || "—"}</td>
+      <td class="muted-cell">${[r.detalle, r.comentarios].filter(Boolean).join(" — ") || "—"}</td>
+    </tr>
+  `).join("");
+}
+
+function renderAll(){
+  renderSlicers();
+  renderKPIs();
+  renderCharts();
+  renderTable();
+}
+
+document.getElementById("reset-btn").addEventListener("click", () => {
+  state.maquina.clear(); state.linea.clear(); state.prioridad.clear(); state.estado.clear();
+  renderAll();
+});
+
+renderAll();
+
+if(window.matchMedia){
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", renderAll);
+}
+</script>
