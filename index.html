@@ -147,6 +147,7 @@
 
   .slicer-groups{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
   .slicer-group{display:flex;flex-direction:column;gap:7px;min-width:0;}
+  .slicer-group.full{grid-column:1 / -1;}
   .slicer-label{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;}
   .chip-row{display:flex;flex-wrap:wrap;gap:6px;}
   .chip{
@@ -289,6 +290,10 @@
         <div class="slicer-label">Estado orden</div>
         <div class="chip-row" id="slicer-estado"></div>
       </div>
+      <div class="slicer-group full">
+        <div class="slicer-label">Celda</div>
+        <div class="chip-row" id="slicer-celda"></div>
+      </div>
     </div>
   </section>
 
@@ -341,6 +346,7 @@ const DATA = [{"maquina": "A0E", "celda": "Celda 1", "celdaNum": 1, "linea": "L�
 
 const PRIORIDAD_ORDER = ["Alta","Media","Baja","Sin definir"];
 const ESTADO_ORDER = ["Pendiente","Sin estado","Completado"];
+const CELDA_ORDER = Array.from(new Set(DATA.map(r=>r.celdaNum))).sort((a,b)=>a-b).map(n=>`Celda ${n}`);
 
 function prioridadWeight(p){
   return {"Alta":3,"Media":2,"Baja":1,"Sin definir":0}[p] ?? 0;
@@ -361,6 +367,7 @@ const state = {
   linea: new Set(),
   prioridad: new Set(),
   estado: new Set(),
+  celda: new Set(),
 };
 
 function passesFilter(row, exceptKey){
@@ -369,6 +376,7 @@ function passesFilter(row, exceptKey){
     linea: () => state.linea.size===0 || state.linea.has(row.linea),
     prioridad: () => state.prioridad.size===0 || state.prioridad.has(row.prioridad),
     estado: () => state.estado.size===0 || state.estado.has(row.estado),
+    celda: () => state.celda.size===0 || state.celda.has(row.celda),
   };
   return Object.keys(checks).every(k => k===exceptKey ? true : checks[k]());
 }
@@ -420,6 +428,7 @@ function renderSlicers(){
   buildSlicerGroup("slicer-linea", "linea", ["Línea 1","Línea 2","Línea 3"]);
   buildSlicerGroup("slicer-prioridad", "prioridad", PRIORIDAD_ORDER);
   buildSlicerGroup("slicer-estado", "estado", ESTADO_ORDER);
+  buildSlicerGroup("slicer-celda", "celda", CELDA_ORDER);
 }
 
 function renderKPIs(){
@@ -565,7 +574,7 @@ function renderAll(){
 }
 
 document.getElementById("reset-btn").addEventListener("click", () => {
-  state.maquina.clear(); state.linea.clear(); state.prioridad.clear(); state.estado.clear();
+  state.maquina.clear(); state.linea.clear(); state.prioridad.clear(); state.estado.clear(); state.celda.clear();
   renderAll();
 });
 
