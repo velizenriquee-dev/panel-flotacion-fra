@@ -171,7 +171,7 @@
   .chip:not(.zero):hover{border-color:var(--accent);}
 
   /* charts */
-  .charts{display:grid;grid-template-columns:1.1fr 1.4fr 1fr;gap:14px;}
+  .charts{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
   .panel{
     background:var(--surface);
     border:1px solid var(--line);
@@ -261,7 +261,7 @@
     <div>
       <div class="eyebrow">Mantenimiento · Planta de Flotación</div>
       <h1>Panel de Seguimiento — Celdas A0E · A1 · A2</h1>
-      <div class="subhead">Detalle de cada aviso SAP, prioridad asignada y estado de la orden. Filtra con los segmentadores para explorar por máquina, línea, prioridad o estado.</div>
+      <div class="subhead">Detalle de cada aviso SAP, prioridad asignada y estado de la orden. Filtra con los segmentadores para explorar por flotación, línea, prioridad, celda o estado.</div>
     </div>
     <div class="updated" id="updated-badge">ACTUALIZADO 10-09-2026</div>
   </header>
@@ -275,7 +275,7 @@
     </div>
     <div class="slicer-groups">
       <div class="slicer-group">
-        <div class="slicer-label">Máquina</div>
+        <div class="slicer-label">Flotación</div>
         <div class="chip-row" id="slicer-maquina"></div>
       </div>
       <div class="slicer-group">
@@ -305,6 +305,10 @@
     <div class="panel">
       <div class="panel-title">Prioridad por línea</div>
       <div class="chart-box"><canvas id="chart-linea"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Prioridad por Flotación</div>
+      <div class="chart-box"><canvas id="chart-maquina"></canvas></div>
     </div>
     <div class="panel">
       <div class="panel-title">Estado de la orden</div>
@@ -471,6 +475,17 @@ function renderCharts(){
     maxBarThickness: 34,
   }));
   renderStackedBar("chart-linea", lineas, datasetsLinea);
+
+  // Maquina (Flotación) stacked bar
+  const maquinas = ["A0E","A1","A2"];
+  const datasetsMaquina = PRIORIDAD_ORDER.map(p => ({
+    label: p,
+    data: maquinas.map(m => rows.filter(r=>r.maquina===m && r.prioridad===p).length),
+    backgroundColor: colorFor(p),
+    borderRadius: 3,
+    maxBarThickness: 34,
+  }));
+  renderStackedBar("chart-maquina", maquinas, datasetsMaquina);
 
   // Estado bar
   const eCounts = ESTADO_ORDER.map(e => rows.filter(r=>r.estado===e).length);
