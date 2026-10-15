@@ -426,7 +426,18 @@ let charts = {};
 function buildSlicerGroup(containerId, field, order, labelFn){
   const container = document.getElementById(containerId);
   container.innerHTML = "";
-  const values = order || Array.from(new Set(DATA.map(r=>r[field]))).sort();
+  const baseOrder = order || Array.from(new Set(DATA.map(r=>r[field]))).sort();
+  // Categories that never occur in the full dataset (legacy/unused states, "Sin definir"
+  // when nothing is undefined) sink to the end of their group instead of sitting
+  // awkwardly between active ones. This is computed from the full dataset, not the
+  // current cross-filter selection, so chip positions stay stable while filtering.
+  const hasAnyData = val => DATA.some(r => r[field] === val);
+  const values = baseOrder.slice().sort((a, b) => {
+    const ad = hasAnyData(a) ? 0 : 1;
+    const bd = hasAnyData(b) ? 0 : 1;
+    if(ad !== bd) return ad - bd;
+    return baseOrder.indexOf(a) - baseOrder.indexOf(b);
+  });
   values.forEach(val => {
     const count = filteredRows(field).filter(r => r[field]===val).length;
     const chip = document.createElement("button");
