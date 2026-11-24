@@ -21,8 +21,7 @@
     --good-soft:rgba(0,152,170,.12);
     --neutral-state:#5C6971;
     --neutral-soft:rgba(54,66,74,.08);
-    --chart-rotor:#E55302;
-    --chart-estab:#4C5FD1;
+    --chart-estab:#0072B1;
     --shadow: 0 1px 2px rgba(54,66,74,.07), 0 8px 24px -12px rgba(54,66,74,.22);
   }
   @media (prefers-color-scheme: dark){
@@ -45,8 +44,7 @@
       --good-soft:rgba(47,187,205,.16);
       --neutral-state:#B9C1C2;
       --neutral-soft:rgba(255,255,255,.08);
-      --chart-rotor:#C25A1E;
-      --chart-estab:#5A6BC4;
+      --chart-estab:#2F8FD0;
       --shadow: 0 1px 0 rgba(0,0,0,.4), 0 12px 28px -14px rgba(0,0,0,.6);
     }
   }
@@ -69,8 +67,7 @@
     --good-soft:rgba(47,187,205,.16);
     --neutral-state:#B9C1C2;
     --neutral-soft:rgba(255,255,255,.08);
-    --chart-rotor:#C25A1E;
-    --chart-estab:#5A6BC4;
+    --chart-estab:#2F8FD0;
     --shadow: 0 1px 0 rgba(0,0,0,.4), 0 12px 28px -14px rgba(0,0,0,.6);
   }
 
@@ -355,6 +352,21 @@
     <div class="chart-box" style="height:260px;">
       <canvas id="chart-rotor-estab"></canvas>
     </div>
+    <div class="muted-cell" style="font-size:11.5px;">Haz clic en una barra para ver el detalle de las órdenes.</div>
+    <div id="rotor-detail" hidden>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:8px;">
+        <div class="muted-cell cell-strong" id="rotor-detail-title"></div>
+        <button class="reset-btn" id="rotor-detail-close" type="button">Cerrar</button>
+      </div>
+      <div class="table-scroll" style="max-height:240px;">
+        <table>
+          <thead>
+            <tr><th>Celda</th><th>Orden/Aviso</th><th>Texto breve</th><th>Fecha fin extrema</th></tr>
+          </thead>
+          <tbody id="rotor-detail-body"></tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
   <section class="table-panel">
@@ -403,7 +415,7 @@ function classifyRotorEstab(row){
   const isEstab = /estabilizador/.test(text);
   if(!isRotor && !isEstab) return null;
   const year = row.fechaFinExtrema ? row.fechaFinExtrema.slice(-4) : "Sin fecha";
-  return { isRotor, isEstab, year, maquina: row.maquina };
+  return { isRotor, isEstab, year, maquina: row.maquina, row };
 }
 const ROTOR_ESTAB_ROWS = DATA.map(classifyRotorEstab).filter(Boolean);
 const ROTOR_ESTAB_YEARS = Array.from(new Set(ROTOR_ESTAB_ROWS.map(r=>r.year))).sort((a,b) => {
@@ -649,13 +661,44 @@ function renderRotorEstabChart(){
   const rotorCounts = maquinas.map(m => rows.filter(r=>r.maquina===m && r.isRotor).length);
   const estabCounts = maquinas.map(m => rows.filter(r=>r.maquina===m && r.isEstab).length);
   const datasets = [
-    { label:"Rotor", data: rotorCounts, backgroundColor: cssVar("--chart-rotor"), borderRadius:4, maxBarThickness:40 },
+    { label:"Rotor", data: rotorCounts, backgroundColor: cssVar("--accent"), borderRadius:4, maxBarThickness:40 },
     { label:"Estabilizador", data: estabCounts, backgroundColor: cssVar("--chart-estab"), borderRadius:4, maxBarThickness:40 },
   ];
-  renderGroupedBar("chart-rotor-estab", maquinas, datasets);
+  renderGroupedBar("chart-rotor-estab", maquinas, datasets, (maquina, datasetIndex) => {
+    const categoryKey = datasetIndex === 0 ? "isRotor" : "isEstab";
+    const label = datasetIndex === 0 ? "Rotor" : "Estabilizador";
+    showRotorEstabDetail(maquina, categoryKey, label, rows);
+  });
+  hideRotorEstabDetail();
 }
 
-function renderGroupedBar(id, labels, datasets){
+function showRotorEstabDetail(maquina, categoryKey, label, rows){
+  const matches = rows.filter(r => r.maquina===maquina && r[categoryKey]).map(r => r.row);
+  matches.sort((a,b) => {
+    const toKey = (s) => s ? s.split("-").reverse().join("-") : "0000-00-00";
+    return toKey(b.fechaFinExtrema).localeCompare(toKey(a.fechaFinExtrema));
+  });
+  const panel = document.getElementById("rotor-detail");
+  const title = document.getElementById("rotor-detail-title");
+  const tbody = document.getElementById("rotor-detail-body");
+  title.textContent = `${label} — ${maquina}: ${matches.length} ${matches.length===1 ? "orden" : "órdenes"}`;
+  tbody.innerHTML = matches.length ? matches.map(r => `
+    <tr>
+      <td class="cell-strong">${r.celda}</td>
+      <td class="mono">${r.ordenAviso || "—"}</td>
+      <td class="muted-cell">${r.textoBreve || r.descripcion || "—"}</td>
+      <td class="muted-cell">${r.fechaFinExtrema || "—"}</td>
+    </tr>
+  `).join("") : `<tr class="empty-row"><td colspan="4">Sin órdenes para esta selección.</td></tr>`;
+  panel.hidden = false;
+}
+
+function hideRotorEstabDetail(){
+  const panel = document.getElementById("rotor-detail");
+  if(panel) panel.hidden = true;
+}
+
+function renderGroupedBar(id, labels, datasets, onBarClick){
   const ctx = document.getElementById(id).getContext("2d");
   if(charts[id]) charts[id].destroy();
   charts[id] = new Chart(ctx, {
@@ -670,6 +713,14 @@ function renderGroupedBar(id, labels, datasets){
       plugins:{
         legend:{ position:"bottom", labels:{ color: cssVar("--muted"), font: baseFont(), boxWidth:9, boxHeight:9, padding:12 } },
         tooltip:{ titleFont: baseFont(), bodyFont: baseFont() }
+      },
+      onHover: (evt, elements) => {
+        if(evt.native) evt.native.target.style.cursor = (onBarClick && elements.length) ? "pointer" : "default";
+      },
+      onClick: (evt, elements, chart) => {
+        if(!onBarClick || !elements.length) return;
+        const el = elements[0];
+        onBarClick(chart.data.labels[el.index], el.datasetIndex);
       }
     }
   });
@@ -723,6 +774,8 @@ document.getElementById("reset-btn").addEventListener("click", () => {
   Object.values(state).forEach(s => s.clear());
   renderAll();
 });
+
+document.getElementById("rotor-detail-close").addEventListener("click", hideRotorEstabDetail);
 
 renderAll();
 
